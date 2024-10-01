@@ -4,6 +4,8 @@ This is a simple implementation of [Conway's Game of Life](https://en.wikipedia.
 
 ![glider gif](c-gol-raylib.gif)
 
+Before compiling, install [Raylib](https://www.raylib.com/).
+
 ##### Compile:
 
 ```console

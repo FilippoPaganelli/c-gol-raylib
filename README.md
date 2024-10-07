@@ -5,9 +5,9 @@ The cells grid is initialised with a simple [Glider](https://conwaylife.com/wiki
 
 ### Controls
 
-By pressing `d` or `p`, you switch between `DRAW` or `PLAY` modes. In `DRAW` mode you can design your starting state, then let it play in `PLAY` mode.
+By pressing **`d`** or **`p`**, you switch between **`DRAW`** and **`PLAY`** modes. In `DRAW` mode you can design your starting state, then let it simulate in `PLAY` mode.
 
-By pressing `r`, you reset the grid state to blank.
+By pressing **`r`**, you reset the grid state to blank.
 
 Video example:
 

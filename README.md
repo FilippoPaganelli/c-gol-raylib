@@ -3,6 +3,11 @@
 This is an implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) written in C, using [Raylib](https://www.raylib.com/) for the graphics.
 The cells grid is initialised with a simple [Glider](https://conwaylife.com/wiki/Glider).
 
+### TODO:
+
+- [ ] Add preset patterns
+- [ ] Allow mouse dragging in DRAW mode (?)
+
 ### Controls
 
 By pressing **`d`** or **`p`**, you switch between **`DRAW`** and **`PLAY`** modes. In `DRAW` mode you can design your starting state, then let it simulate in `PLAY` mode.

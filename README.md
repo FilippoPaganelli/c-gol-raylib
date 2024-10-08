@@ -6,7 +6,7 @@ The cells grid is initialised with a simple [Glider](https://conwaylife.com/wiki
 ### TODO:
 
 - [ ] Add preset patterns
-- [ ] Allow mouse dragging in DRAW mode (?)
+- [ ] (?) Allow mouse dragging in DRAW mode
 
 ### Controls
 

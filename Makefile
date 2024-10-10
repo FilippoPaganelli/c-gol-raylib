@@ -1,3 +1,3 @@
-main: main.c
-	gcc main.c -Lraylib/src/ -l:libraylib.a -lm -o main
+gol: gol.c
+	gcc gol.c -Lraylib/src/ -l:libraylib.a -lm -o gol
 

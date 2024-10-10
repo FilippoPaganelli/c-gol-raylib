@@ -5,8 +5,9 @@ The cells grid is initialised with a simple [Glider](https://conwaylife.com/wiki
 
 ### TODO:
 
-- [ ] Add preset patterns
-- [ ] (?) Allow mouse dragging in DRAW mode
+- [x] Load state from file
+- [x] Save state to file
+- [ ] Allow mouse dragging in DRAW mode (?)
 
 ### Controls
 
@@ -16,7 +17,7 @@ By pressing **`r`**, you reset the grid state to blank.
 
 Video example:
 
-[c-gol-raylib-interactive.webm](https://github.com/user-attachments/assets/78b1f81f-25a3-47a1-ace7-630c7b1ca504)
+[![Watch the video](./screenshot.png)](./gol-raylib-demo.mp4)
 
 Before compiling, install [Raylib](https://www.raylib.com/).
 

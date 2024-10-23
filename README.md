@@ -7,6 +7,7 @@ The canvas is initialised with a simple [Glider](https://conwaylife.com/wiki/Gli
 
 - [x] Load state from file
 - [x] Save state to file
+- [ ] Show events notification (e.g. on file save or error)
 - [ ] Allow mouse dragging in DRAW mode (?)
 
 ### Compile and Run:

@@ -6,25 +6,31 @@
 
 #define COLS          20
 #define ROWS          20
-#define NUM_CELLS     COLS*ROWS
+#define NUM_CELLS     (COLS*ROWS)
 #define CELL_SIZE     35
 #define GRID_PADDING  10
 #define PANEL_HEIGHT  175
-#define SCREEN_WIDTH  COLS*CELL_SIZE + 2*GRID_PADDING
-#define SCREEN_HEIGHT ROWS*CELL_SIZE + 2*GRID_PADDING + PANEL_HEIGHT
+#define SCREEN_WIDTH  (COLS*CELL_SIZE + 2*GRID_PADDING)
+#define SCREEN_HEIGHT (ROWS*CELL_SIZE + 2*GRID_PADDING + PANEL_HEIGHT)
 
-#define FONT_SIZE     22
+#define FONT_SIZE            22
+#define NOTIFICATION_TIMEOUT 3.0f
+#define NOTIF_TEXT_LENGTH    128
 
-#define MODE_DRAW     (1 << 0)  // 0001 - Draw
-#define MODE_PLAY     (1 << 1)  // 0010 - Play
+#define MODE_DRAW  (1 << 0)  // 0001 - Draw
+#define MODE_PLAY  (1 << 1)  // 0010 - Play
+#define MODE_NOTIF (1 << 2)  // 0100 - Notification
 
-#define ALIVE         true
-#define DEAD          false
+#define ALIVE true
+#define DEAD  false
 
 // Keeps the current cells state
 bool cells[NUM_CELLS] = {0};
 // Keeps the state to rewind to
 bool rewind_cells[NUM_CELLS] = {0};
+
+// Modes bitmask
+int modes = 0;
 
 void init_glider() {
     cells[COLS*1 + 4] = ALIVE;
@@ -118,7 +124,7 @@ void handle_draw_mode() {
     }
 }
 
-const char *get_mode_string (int modes) {
+const char *get_mode_text (int modes) {
     static char text[10];
 
     if (modes & MODE_DRAW) sprintf(text, "< DRAW >");
@@ -128,6 +134,50 @@ const char *get_mode_string (int modes) {
     return text;
 }
 
+// Notifications logic
+double start_time = 0;
+char notification_text[NOTIF_TEXT_LENGTH];
+void show_notification() {
+    const double time_passed = GetTime() - start_time;
+    if (time_passed >= NOTIFICATION_TIMEOUT) {
+        start_time = GetTime();
+        modes &= ~MODE_NOTIF;
+        return;
+    }
+
+    float alpha = 1;
+    Color color_bg = DARKGRAY;
+    Color color_fg = SKYBLUE;
+    // Fade in at the beginning
+    if (time_passed <= NOTIFICATION_TIMEOUT*0.1f) {
+        alpha = (0 + time_passed)/(NOTIFICATION_TIMEOUT*0.1f);
+        color_bg = Fade(DARKGRAY, alpha);
+        color_fg = Fade(SKYBLUE, alpha);
+    }
+    // Fade out at the end
+    else if (time_passed >= NOTIFICATION_TIMEOUT*0.7f) {
+        alpha = (NOTIFICATION_TIMEOUT - time_passed)/(NOTIFICATION_TIMEOUT - NOTIFICATION_TIMEOUT*0.7f);
+        color_bg = Fade(DARKGRAY, alpha);
+        color_fg = Fade(SKYBLUE, alpha);
+    }
+
+    int msg_length = MeasureText(notification_text, FONT_SIZE);
+    Rectangle rec = {
+        .x = SCREEN_WIDTH - msg_length - 20 - GRID_PADDING,
+        .y = 10 + 4*(13 + FONT_SIZE) - 10/2,
+        .width = 20 + msg_length,
+        .height = FONT_SIZE + 10
+    };
+    DrawRectangleRounded(rec, 0.3f, 0, color_bg);
+    DrawText(notification_text, SCREEN_WIDTH - msg_length - 20 - GRID_PADDING + 20/2, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, color_fg);
+}
+
+void push_notification(const char *text) {
+    sprintf(notification_text, "%s", text);
+    modes |= MODE_NOTIF;
+    start_time = GetTime();
+}
+
 void save_to_file() {
     const char *output_file = "./state.gol";
     TraceLog(LOG_INFO, "Saving current state to file: %s", output_file);
@@ -135,21 +185,24 @@ void save_to_file() {
     FILE *f = fopen(output_file, "w");
     if (f == NULL) {
         TraceLog(LOG_ERROR, "Could not open file: %s", output_file);
+        push_notification("Error saving to file");
         return;
     }
 
     if (fwrite(cells, sizeof(bool), NUM_CELLS, f) < 0) {
         int err = errno;
         TraceLog(LOG_ERROR, "Could not write to file: %s. Cause: %s", output_file, strerror(errno));
+        push_notification("Error saving to file");
     }
 
     TraceLog(LOG_INFO, "Saved current state to file: %s", output_file);
+    push_notification("Saved state to file");
     fclose(f);
 }
 
 int main(int argc, char **argv) {
     if (argc > 1) {
-        if (strcmp(argv[1], "--help") == 0) {
+        if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
             TraceLog(LOG_INFO, "Usage: %s [preset file]", argv[0]);
             return 0;
         }
@@ -161,31 +214,33 @@ int main(int argc, char **argv) {
         if (f == NULL) {
             TraceLog(LOG_ERROR, "Could not open file: %s", preset_file);
             TraceLog(LOG_INFO, "Starting app with default Glider instead");
+            push_notification("Error loading state from file");
             init_glider();
         }
         else {
             fread(cells, sizeof(bool), NUM_CELLS, f);
             TraceLog(LOG_INFO, "Loaded state from file: %s", preset_file);
-
+            push_notification("Loaded state from file");
             fclose(f);
         }
     }
     else {
         init_glider();
+        push_notification("Loaded Glider");
     }
 
-    int modes = 0; // Modes bitmask
-
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Game of Life in Raylib!");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Game of Life with Raylib!");
     SetTargetFPS(10);
 
+    // Event loop
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_D)) {
             modes &= ~MODE_PLAY; modes |= MODE_DRAW;
         }
         if (IsKeyPressed(KEY_P)) {
             modes &= ~MODE_DRAW; modes |= MODE_PLAY;
-            memcpy(rewind_cells, cells, sizeof(cells)); // Take a snapshot of the current state
+            // Take a snapshot of the current state for 'rewind'
+            memcpy(rewind_cells, cells, sizeof(cells));
         }
         if (IsKeyPressed(KEY_R)) {
             modes = 0; memset(cells, DEAD, sizeof(bool) * NUM_CELLS);
@@ -197,16 +252,16 @@ int main(int argc, char **argv) {
             modes = 0;
             save_to_file();
         }
-        const char *modeString = get_mode_string(modes);
+        const char *mode_text = get_mode_text(modes);
 
         BeginDrawing();
           ClearBackground(BLACK);
 
-          DrawText("This is a demo of Conway's Game of Life with Raylib!",          10, 10 + 0*(13 + FONT_SIZE), FONT_SIZE, RAYWHITE);
-          DrawText("( d )  DRAW mode,    ( p )  PLAY & save checkpoint.",     10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( w )  REWIND to checkpoint,    ( r )  RESET canvas.",                                     10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( S )  SAVE canvas to file.", 10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText(modeString,                                                      10, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, SKYBLUE);
+          DrawText("This is a demo of Conway's Game of Life with Raylib!", 10, 10 + 0*(13 + FONT_SIZE), FONT_SIZE, RAYWHITE);
+          DrawText("( d )  DRAW mode,    ( p )  PLAY & save checkpoint.",  10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( w )  REWIND to checkpoint,    ( r )  RESET canvas.", 10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( S )  SAVE canvas to file.",                          10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText(mode_text,                                              10, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, SKYBLUE);
 
           draw_grid();
           draw_state();
@@ -216,6 +271,11 @@ int main(int argc, char **argv) {
           }
           else if (modes & MODE_PLAY) {
               next_state();
+          }
+
+          // Handle notifications
+          if (modes & MODE_NOTIF) {
+              show_notification();
           }
 
         EndDrawing();

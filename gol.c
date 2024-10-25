@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 #include <math.h>
 #include <errno.h>
 #include "raylib.h"
@@ -38,6 +40,14 @@ void init_glider() {
     cells[COLS*3 + 3] = ALIVE;
     cells[COLS*3 + 4] = ALIVE;
     cells[COLS*3 + 5] = ALIVE;
+}
+
+void random_state() {
+    srand(time(NULL));
+    for (size_t i = 0; i < NUM_CELLS; ++i) {
+        int rand_value = (rand()%3)/2; // Reduce likelihood of getting ALIVE cells
+        cells[i] = (bool) rand_value;
+    }
 }
 
 void next_state() {
@@ -237,10 +247,15 @@ int main(int argc, char **argv) {
         if (IsKeyPressed(KEY_D)) {
             modes &= ~MODE_PLAY; modes |= MODE_DRAW;
         }
-        if (IsKeyPressed(KEY_P)) {
-            modes &= ~MODE_DRAW; modes |= MODE_PLAY;
-            // Take a snapshot of the current state for 'rewind'
-            memcpy(rewind_cells, cells, sizeof(cells));
+        if (IsKeyPressed(KEY_SPACE)) {
+            if (modes & MODE_PLAY) {
+                modes &= ~MODE_PLAY; modes |= MODE_DRAW;
+            }
+            else {
+                modes &= ~MODE_DRAW; modes |= MODE_PLAY;
+                // Take a snapshot of the current state for 'rewind'
+                memcpy(rewind_cells, cells, sizeof(cells));
+            }
         }
         if (IsKeyPressed(KEY_R)) {
             modes = 0; memset(cells, DEAD, sizeof(bool) * NUM_CELLS);
@@ -253,16 +268,20 @@ int main(int argc, char **argv) {
             modes = 0;
             save_to_file();
         }
+        if (IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_R)) {
+            modes = 0;
+            random_state();
+        }
         const char *mode_text = get_mode_text(modes);
 
         BeginDrawing();
           ClearBackground(BLACK);
 
-          DrawText("This is a demo of Conway's Game of Life with Raylib!", 10, 10 + 0*(13 + FONT_SIZE), FONT_SIZE, RAYWHITE);
-          DrawText("( d )  DRAW mode,    ( p )  PLAY & save checkpoint.",  10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( w )  REWIND to checkpoint,    ( r )  RESET canvas.", 10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( S )  SAVE canvas to file.",                          10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText(mode_text,                                              10, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, SKYBLUE);
+          DrawText("This is a demo of Conway's Game of Life with Raylib!",     10, 10 + 0*(13 + FONT_SIZE), FONT_SIZE, RAYWHITE);
+          DrawText("( d )  DRAW mode,    ( SPACE )  PLAY/PAUSE & save state.", 10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( w )  REWIND to checkpoint,    ( r )  RESET canvas.",     10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( S )  SAVE canvas to file,    ( R )  Random state.",      10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText(mode_text,                                                  10, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, SKYBLUE);
 
           draw_grid();
           draw_state();

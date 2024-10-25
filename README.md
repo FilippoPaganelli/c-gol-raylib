@@ -8,6 +8,7 @@ The canvas is initialised with a simple [Glider](https://conwaylife.com/wiki/Gli
 - [x] Load state from file
 - [x] Save state to file
 - [x] Show events notification (e.g. on file save or error)
+- [x] Add key command to randomly generate a state
 - [ ] Allow mouse dragging in DRAW mode (?)
 
 ### Compile and Run:
@@ -19,14 +20,15 @@ make
 
 Before compiling, install [Raylib](https://www.raylib.com/).
 
-### Controls
+### Controls:
 
 - (d): enter DRAW mode and use mouse to spawn/kill cells on the canvas
-- (p): save current state in a checkpoint and PLAY the simulation
+- (SPACE): save current state in a checkpoint and PLAY/PAUSE the simulation
 - (w): REWIND to the state saved in the checkpoint
 - (r): RESET to an empty canvas
+- (R): populate the canvas with a random state
 - (S): SAVE the current state to a file (`state.gol`) to load it in a future session
 
-### Video example:
+### Video demo:
 
-[screencast.webm](https://github.com/user-attachments/assets/9cd04de2-3ed5-46ea-8c56-138ceea12eeb)
+https://github.com/user-attachments/assets/49c6b381-5d6d-41de-be87-2e272576a6e5

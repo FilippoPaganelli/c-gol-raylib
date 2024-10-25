@@ -48,6 +48,7 @@ void random_state() {
         int rand_value = (rand()%3)/2; // Reduce likelihood of getting ALIVE cells
         cells[i] = (bool) rand_value;
     }
+    push_notification("Generated random state");
 }
 
 void next_state() {
@@ -278,9 +279,9 @@ int main(int argc, char **argv) {
           ClearBackground(BLACK);
 
           DrawText("This is a demo of Conway's Game of Life with Raylib!",     10, 10 + 0*(13 + FONT_SIZE), FONT_SIZE, RAYWHITE);
-          DrawText("( d )  DRAW mode,    ( SPACE )  PLAY/PAUSE & save state.", 10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( w )  REWIND to checkpoint,    ( r )  RESET canvas.",     10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
-          DrawText("( S )  SAVE canvas to file,    ( R )  Random state.",      10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( SPACE )  PLAY/PAUSE & save state,    ( d )  DRAW mode.", 10, 10 + 1*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( w )  REWIND to saved state,    ( r )  RESET canvas.",    10, 10 + 2*(13 + FONT_SIZE), FONT_SIZE, GOLD);
+          DrawText("( R )  Random state,    ( S )  SAVE canvas to file.",      10, 10 + 3*(13 + FONT_SIZE), FONT_SIZE, GOLD);
           DrawText(mode_text,                                                  10, 10 + 4*(13 + FONT_SIZE), FONT_SIZE, SKYBLUE);
 
           draw_grid();

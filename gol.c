@@ -155,8 +155,8 @@ void show_notification() {
         color_fg = Fade(SKYBLUE, alpha);
     }
     // Fade out at the end
-    else if (time_passed >= NOTIFICATION_TIMEOUT*0.7f) {
-        alpha = (NOTIFICATION_TIMEOUT - time_passed)/(NOTIFICATION_TIMEOUT - NOTIFICATION_TIMEOUT*0.7f);
+    else if (time_passed >= NOTIFICATION_TIMEOUT*0.8f) {
+        alpha = (NOTIFICATION_TIMEOUT - time_passed)/(NOTIFICATION_TIMEOUT - NOTIFICATION_TIMEOUT*0.8f);
         color_bg = Fade(DARKGRAY, alpha);
         color_fg = Fade(SKYBLUE, alpha);
     }
@@ -247,6 +247,7 @@ int main(int argc, char **argv) {
         }
         if (IsKeyPressed(KEY_W)) {
             modes = 0; memcpy(cells, rewind_cells, sizeof(rewind_cells));
+            push_notification("Rewinded to previous state");
         }
         if (IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_S)) {
             modes = 0;
